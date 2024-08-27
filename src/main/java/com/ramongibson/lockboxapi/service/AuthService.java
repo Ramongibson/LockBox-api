@@ -4,6 +4,7 @@ import com.ramongibson.lockboxapi.dto.LoginDTO;
 import com.ramongibson.lockboxapi.dto.UserDTO;
 import com.ramongibson.lockboxapi.model.User;
 import com.ramongibson.lockboxapi.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,21 +24,21 @@ public class AuthService {
         }
 
         User user = User.builder()
-                .username(userDTO.getUsername())
+                .username(userDTO.getUsername().toLowerCase())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
-                .email(userDTO.getEmail())
+                .email(userDTO.getEmail().toLowerCase())
                 .build();
 
         userRepository.save(user);
         return "User registered successfully";
     }
 
-    public String loginUser(LoginDTO loginDTO) {
-        Optional<User> userOpt = userRepository.findByUsername(loginDTO.getUsername());
+    public String loginUser(@Valid LoginDTO userDTO) {
+        Optional<User> userOpt = userRepository.findByUsername(userDTO.getUsername().toLowerCase());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-                return "Login successful"; // TODO: Replace with actual token generation
+            if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
+                return "Login successful";
             }
         }
         return null;
