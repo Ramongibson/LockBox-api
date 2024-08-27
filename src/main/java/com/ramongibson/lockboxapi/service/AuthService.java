@@ -6,6 +6,7 @@ import com.ramongibson.lockboxapi.model.User;
 import com.ramongibson.lockboxapi.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +20,17 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public String registerUser(UserDTO userDTO) {
-        if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+        String username = StringUtils.lowerCase(userDTO.getUsername());
+        String email = StringUtils.lowerCase(userDTO.getEmail());
+
+        if (userRepository.findByUsername(username).isPresent()) {
             return "Username already exists";
         }
 
         User user = User.builder()
-                .username(userDTO.getUsername().toLowerCase())
+                .username(username)
                 .password(passwordEncoder.encode(userDTO.getPassword()))
-                .email(userDTO.getEmail().toLowerCase())
+                .email(email)
                 .build();
 
         userRepository.save(user);
@@ -34,7 +38,9 @@ public class AuthService {
     }
 
     public String loginUser(@Valid LoginDTO userDTO) {
-        Optional<User> userOpt = userRepository.findByUsername(userDTO.getUsername().toLowerCase());
+        String username = StringUtils.lowerCase(userDTO.getUsername());
+
+        Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
