@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,8 +46,14 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO) {
         String token = authService.loginUser(loginDTO);
-        return token != null ? ResponseEntity.ok(token) : ResponseEntity.status(401).body("Invalid credentials");
+        if (token != null) {
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
     }
 }
